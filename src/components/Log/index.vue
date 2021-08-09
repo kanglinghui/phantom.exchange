@@ -91,9 +91,9 @@ export default {
     const data = reactive({
       btnList: [{ title: "日志" }],
       activeIndex: 0,
-      headRightClass: "el-icon-caret-bottom",
+      headRightClass: "el-icon-caret-top",
       checkList: [],
-      showMain: false,
+      showMain: true,
       tableData: [
         {
           title: "系统消息",
@@ -191,23 +191,23 @@ export default {
     width: calc(100vw - 100px);
   }
 }
-/deep/.el-checkbox__label {
+:deep(.el-checkbox__label) {
   font-weight: 400;
   color: #272829;
   font-size: 12px;
   line-height: 14px;
 }
-/deep/.heade-cell {
+:deep(.heade-cell) {
   font-size: 12px !important;
   .cell {
     line-height: 14px !important;
     font-size: 12px !important;
   }
 }
-/deep/.el-table__header-wrapper {
+:deep(.el-table__header-wrapper) {
   display: none;
 }
-/deep/.row-cell {
+:deep(.row-cell) {
   line-height: 18px !important;
   font-size: 13px !important;
   padding: 0 5px !important;

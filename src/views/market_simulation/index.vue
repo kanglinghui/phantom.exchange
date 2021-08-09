@@ -3,7 +3,7 @@
     <div class="t-box">
       <div class="config public">
         <div class="config-btn">
-          <span><i class="el-icon-setting"></i>撮合配置</span>
+          <span @click="matching"><i class="el-icon-setting"></i>撮合配置</span>
         </div>
         <div class="config-btn">
           <span><i class="el-icon-setting"></i>投资组合配置</span>
@@ -190,7 +190,10 @@
       <div class="table-box">
         <el-table
           :data="tableData"
+          v-loading="tableLoading"
           :cell-class-name="cellName"
+          empty-text="暂无数据"
+          ref="table"
           :header-cell-class-name="'heade-cell'"
           border
           :height="height.table"
@@ -303,9 +306,9 @@
             header-align="center"
           >
             <template v-slot:default="scope">
-              <span class="table_btn" @click="clinch(scope.row)">成交</span>
-              <span class="table_btn">撤单</span>
-              <span class="table_btn">详情</span>
+              <span class="table_btn cj" @click="clinch(scope.row)">成交</span>
+              <span class="table_btn cd">撤单</span>
+              <span class="table_btn detail">详情</span>
             </template>
           </el-table-column>
         </el-table>
@@ -319,173 +322,367 @@
                 :height="height.tabs"
               /> </el-scrollbar
           ></el-tab-pane>
-          <el-tab-pane label="投资组合交易">
+          <el-tab-pane label="投资组合交易" v-if="false">
             <el-scrollbar><PortfolioUI :height="height.tabs" /> </el-scrollbar
           ></el-tab-pane>
-          <el-tab-pane label="市场仿真交易">
+          <el-tab-pane label="市场仿真交易" v-if="false">
             <el-scrollbar><SimulationUI :height="height.tabs" /> </el-scrollbar
           ></el-tab-pane>
         </el-tabs>
       </div>
     </div>
+    <DialogMatching v-if="matchingShow" v-model:dialog="matchingShow" />
   </div>
 </template>
 <script>
-import { reactive, toRefs, computed } from "vue";
+import {
+  reactive,
+  toRefs,
+  computed,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+} from "vue";
 import { useStore } from "vuex";
 import FreeTradeUI from "./components/FreeTrade.vue";
 import PortfolioUI from "./components/Portfolio.vue";
 import SimulationUI from "./components/Simulation.vue";
+
+import DialogMatching from "@/components/dialog/Matching.vue";
+
+import { ElNotification } from "element-plus";
+
 export default {
   components: {
     FreeTradeUI,
     PortfolioUI,
     SimulationUI,
+    DialogMatching,
   },
   setup() {
     const store = useStore();
+    let timer = null;
     const data = reactive({
       checkList: [],
       input: "",
       num: -1,
-      tableData: [
-        {
-          date: "0805",
-          order_status: "部分成交部分撤单",
-          direction: "买",
-          sumProgress: "100",
-          progress: 80,
-        },
-        {
-          date: "0805",
-          order_status: "部分成交部分撤单",
-          direction: "卖",
-          sumProgress: "120",
-          progress: 99,
-        },
-        {
-          date: "0805",
-          order_status: "部分成交部分撤单",
-          direction: "卖",
-          sumProgress: "120",
-          progress: 99,
-        },
-        {
-          date: "0805",
-          order_status: "部分成交部分撤单",
-          direction: "卖",
-          sumProgress: "120",
-          progress: 99,
-        },
-        {
-          date: "0805",
-          order_status: "部分成交部分撤单",
-          direction: "卖",
-          sumProgress: "120",
-          progress: 99,
-        },
-        {
-          date: "0805",
-          order_status: "部分成交部分撤单",
-          direction: "卖",
-          sumProgress: "120",
-          progress: 99,
-        },
-        {
-          date: "0805",
-          order_status: "部分成交部分撤单",
-          direction: "卖",
-          sumProgress: "120",
-          progress: 99,
-        },
-        {
-          date: "0805",
-          order_status: "部分成交部分撤单",
-          direction: "卖",
-          sumProgress: "120",
-          progress: 99,
-        },
-        {
-          date: "0805",
-          order_status: "部分成交部分撤单",
-          direction: "卖",
-          sumProgress: "120",
-          progress: 99,
-        },
-        {
-          date: "0805",
-          order_status: "部分成交部分撤单",
-          direction: "卖",
-          sumProgress: "120",
-          progress: 99,
-        },
-        {
-          date: "0805",
-          order_status: "部分成交部分撤单",
-          direction: "卖",
-          sumProgress: "120",
-          progress: 99,
-        },
-        {
-          date: "0805",
-          order_status: "部分成交部分撤单",
-          direction: "卖",
-          sumProgress: "120",
-          progress: 99,
-        },
-        {
-          date: "0805",
-          order_status: "部分成交部分撤单",
-          direction: "卖",
-          sumProgress: "120",
-          progress: 99,
-        },
-        {
-          date: "0805",
-          order_status: "部分成交部分撤单",
-          direction: "卖",
-          sumProgress: "120",
-          progress: 99,
-        },
+      tableData: [],
+      tableLoading: false,
+      matchingShow: false,
+    });
+    onMounted(() => {
+      timer = setTimeout(() => {
+        data.tableData = [
+          {
+            date: "0801",
+            order_status: "部分成交部分撤单",
+            direction: "买",
+            sumProgress: "100",
+            progress: 80,
+          },
+          {
+            date: "0802",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0803",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0804",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0805",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0806",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0807",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0808",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0809",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0810",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0801",
+            order_status: "部分成交部分撤单",
+            direction: "买",
+            sumProgress: "100",
+            progress: 80,
+          },
+          {
+            date: "0802",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0803",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0804",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0805",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0806",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0807",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0808",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0809",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0810",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0801",
+            order_status: "部分成交部分撤单",
+            direction: "买",
+            sumProgress: "100",
+            progress: 80,
+          },
+          {
+            date: "0802",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0803",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0804",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0805",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0806",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0807",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0808",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0809",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+          {
+            date: "0810",
+            order_status: "部分成交部分撤单",
+            direction: "卖",
+            sumProgress: "120",
+            progress: 99,
+          },
+        ];
+        nextTick(() => {
+          let dom = document.querySelector(
+            ".table-box .el-table .el-table__body-wrapper"
+          );
+          console.log(dom, 1);
+          const offsetHeight = dom.offsetHeight;
+          dom.onscroll = () => {
+            const scrollTop = dom.scrollTop;
+            const scrollHeight = dom.scrollHeight;
+            console.log(scrollTop, scrollHeight, offsetHeight);
+            if (offsetHeight + scrollTop - scrollHeight >= 4) {
+              data.tableLoading = true;
+              setTimeout(() => {
+                data.tableData.push(
+                  ...[
+                    {
+                      date: "0805",
+                      order_status: "部分成交部分撤单",
+                      direction: "卖",
+                      sumProgress: "120",
+                      progress: 99,
+                    },
+                    {
+                      date: "0805",
+                      order_status: "部分成交部分撤单",
+                      direction: "卖",
+                      sumProgress: "120",
+                      progress: 99,
+                    },
+                    {
+                      date: "0805",
+                      order_status: "部分成交部分撤单",
+                      direction: "卖",
+                      sumProgress: "120",
+                      progress: 99,
+                    },
+                    {
+                      date: "0805",
+                      order_status: "部分成交部分撤单",
+                      direction: "卖",
+                      sumProgress: "120",
+                      progress: 99,
+                    },
 
-        {
-          date: "0805",
-          order_status: "部分成交部分撤单",
-          direction: "卖",
-          sumProgress: "120",
-          progress: 99,
-        },
-        {
-          date: "0805",
-          order_status: "部分成交部分撤单",
-          direction: "卖",
-          sumProgress: "120",
-          progress: 99,
-        },
-      ],
+                    {
+                      date: "0805",
+                      order_status: "部分成交部分撤单",
+                      direction: "卖",
+                      sumProgress: "120",
+                      progress: 99,
+                    },
+                    {
+                      date: "0805",
+                      order_status: "部分成交部分撤单",
+                      direction: "卖",
+                      sumProgress: "120",
+                      progress: 99,
+                    },
+                  ]
+                );
+                data.tableLoading = false;
+              }, 1000);
+            }
+          };
+        });
+      }, 500);
+    });
+    onBeforeUnmount(() => {
+      timer && clearTimeout(timer);
     });
     const height = computed(() => {
       const logStatus = store.state.logShowStatus;
       const loginStatus = store.state.loginShow;
       const msgStatus = store.state.msgShow;
       if (logStatus && loginStatus && msgStatus) {
-        return { table: "calc(100vh - 420px)", tabs: "calc(100vh - 450px)" };
+        return { table: "calc(100vh - 430px)", tabs: "calc(100vh - 460px)" };
       } else if (logStatus && msgStatus && !loginStatus) {
         return { table: "calc(100vh - 395px)", tabs: "calc(100vh - 425px)" };
       } else if (loginStatus && msgStatus && !logStatus) {
-        return { table: "calc(100vh - 295px)", tabs: "calc(100vh - 325px)" };
+        return { table: "calc(100vh - 305px)", tabs: "calc(100vh - 335px)" };
       } else if (msgStatus && !loginStatus && !logStatus) {
         return { table: "calc(100vh - 270px)", tabs: "calc(100vh - 300px)" };
       } else if (!msgStatus && logStatus && !loginStatus) {
         return { table: "calc(100vh - 375px)", tabs: "calc(100vh - 405px)" };
       } else if (!msgStatus && !logStatus && loginStatus) {
-        return { table: "calc(100vh - 275px)", tabs: "calc(100vh - 305px)" };
+        return { table: "calc(100vh - 285px)", tabs: "calc(100vh - 315px)" };
+      } else if (!msgStatus && logStatus && loginStatus) {
+        return { table: "calc(100vh - 415px)", tabs: "calc(100vh - 445px)" };
       } else {
         return { table: "calc(100vh - 250px)", tabs: "calc(100vh - 280px)" };
       }
     });
     const clinch = (row) => {
       console.log(row);
+      ElNotification.error({
+        title: "错误",
+        customClass: "err__info",
+        message: "我是消息通知",
+      });
     };
     const cellName = (row) => {
       if (row.column.label === "买卖方向" && row.row.direction === "买") {
@@ -502,12 +699,19 @@ export default {
     const declaration = (form) => {
       console.log(form, "form");
     };
+    const matching = () => {
+      // 撮合配置
+      console.log(data.matchingShow, 1111);
+      data.matchingShow = true;
+      console.log(data.matchingShow, 2);
+    };
     return {
       ...toRefs(data),
       clinch,
       cellName,
       declaration,
       height,
+      matching,
     };
   },
 };
@@ -559,7 +763,7 @@ export default {
       display: flex;
       justify-content: space-between;
       flex-wrap: wrap;
-      /deep/.el-checkbox {
+      :deep(.el-checkbox) {
         display: flex;
         align-items: center;
         i {
@@ -579,7 +783,7 @@ export default {
       justify-content: space-between;
       align-items: center;
       margin-top: 5px;
-      /deep/.el-input__inner {
+      :deep(.el-input__inner) {
         line-height: 22px;
         height: 22px;
       }
@@ -606,7 +810,7 @@ export default {
       span {
         margin: 0 5px;
       }
-      /deep/.el-input__inner {
+      :deep(.el-input__inner) {
         line-height: 22px;
         height: 22px;
       }
@@ -646,7 +850,7 @@ export default {
 .checkBox {
   //   margin-top: 10px;
 }
-/deep/.el-checkbox__label {
+:deep(.el-checkbox__label) {
   font-weight: 400;
   color: #272829;
   font-size: 12px;
@@ -667,20 +871,33 @@ export default {
     background-color: #66b1ff;
   }
 }
+.cj {
+  color: #67c23a;
+  &:hover {
+    background-color: #67c23a;
+    color: #fff;
+  }
+}
+.cd {
+  color: #f56c6c;
+  &:hover {
+    background-color: #f56c6c;
+  }
+}
 
-/deep/td.red-class {
+:deep(td.red-class) {
   background-color: rgba(218, 43, 48, 0.8) !important;
   color: #fff;
 }
-/deep/td.green-class {
+:deep(td.green-class) {
   background-color: rgba(27, 180, 39, 0.8) !important;
   color: #fff;
 }
-/deep/.el-progress-bar__outer {
+:deep(.el-progress-bar__outer) {
   background-color: rgba(0, 0, 0, 0.1);
   text-align: center;
 }
-/deep/.el-progress-bar__innerText {
+:deep(.el-progress-bar__innerText) {
   width: 99px;
   text-align: center;
   span {
@@ -688,18 +905,20 @@ export default {
     transform: translateY(-1.5px);
   }
 }
-/deep/.el-tabs--border-card {
+:deep(.el-tabs--border-card) {
   border-left: 0;
   box-shadow: 0;
 }
-/deep/.heade-cell {
+:deep(.heade-cell) {
   font-size: 12px !important;
+  background-color: rgb(226, 226, 227);
+  color: #303133;
   .cell {
     line-height: 14px !important;
     font-size: 12px !important;
   }
 }
-/deep/.row-cell {
+:deep(.row-cell) {
   line-height: 14px !important;
   font-size: 12px !important;
   padding: 0 5px !important;
@@ -709,7 +928,7 @@ export default {
     padding: 0 5px !important;
   }
 }
-/deep/#tab-0 {
+:deep(#tab-0) {
   &:hover {
     color: rgba(27, 180, 39, 0.8);
   }
@@ -718,7 +937,7 @@ export default {
     background-color: rgba(27, 180, 39, 0.8);
   }
 }
-/deep/#tab-1 {
+:deep(#tab-1) {
   &:hover {
     color: rgba(232, 86, 30, 1);
   }
@@ -727,7 +946,7 @@ export default {
     background-color: rgba(232, 86, 30, 1);
   }
 }
-/deep/#tab-2 {
+:deep(#tab-2) {
   &:hover {
     color: rgba(218, 43, 48, 0.9);
   }

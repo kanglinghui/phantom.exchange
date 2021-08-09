@@ -163,13 +163,13 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
-/deep/.el-input-number {
+:deep(.el-input-number) {
   width: 100%;
 }
-/deep/.el-select {
+:deep(.el-select) {
   width: 100%;
 }
-/deep/.el-form-item {
+:deep(.el-form-item) {
   margin-bottom: 5px;
   .el-form-item__label {
     font-size: 12px;
@@ -199,11 +199,11 @@ export default {
   clear: both;
   background-color: rgba(0, 0, 0, 0.1);
 }
-/deep/.el-form-item {
+:deep(.el-form-item) {
   line-height: 24px;
   height: 24px;
 }
-/deep/.el-input__inner {
+:deep(.el-input__inner) {
   line-height: 24px;
   height: 24px;
 }

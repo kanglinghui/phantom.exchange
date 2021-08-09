@@ -1,5 +1,5 @@
 <template>
-  <div class="message" v-if="show">
+  <div class="message" :style="loginShow ? 'top:65px' : 'top:30px'" v-if="show">
     <i class="el-icon-bell"></i>
     <div class="msg">
       <span>{{ "[" + message.date + "]" }}</span>
@@ -10,7 +10,7 @@
   </div>
 </template>
 <script>
-import { reactive, toRefs } from "vue";
+import { reactive, toRefs, computed } from "vue";
 import { useStore } from "vuex";
 
 export default {
@@ -24,6 +24,9 @@ export default {
       },
       show: true,
     });
+    const loginShow = computed(() => {
+      return store.state.loginShow;
+    });
     emit("status", data.show);
     const exit = () => {
       data.show = false;
@@ -33,6 +36,7 @@ export default {
     return {
       ...toRefs(data),
       exit,
+      loginShow,
     };
   },
 };

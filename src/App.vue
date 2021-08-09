@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <LoginShowUI />
     <HeaderUI />
     <MessageUI @status="msgStatus($event)" />
     <div class="appMain" :style="[appMainStyle, appMainHeight]">
@@ -16,6 +17,7 @@ import HeaderUI from "@/components/Header";
 import MessageUI from "@/components/Message";
 import LogUI from "@/components/Log";
 import FooterUI from "@/components/Footer";
+import LoginShowUI from "@/components/LoginShow";
 import { reactive, toRefs, computed } from "vue";
 import { useStore } from "vuex";
 
@@ -25,6 +27,7 @@ export default {
     MessageUI,
     LogUI,
     FooterUI,
+    LoginShowUI,
   },
   setup() {
     const store = useStore();
@@ -33,12 +36,14 @@ export default {
       loginShow: false,
     });
     const appMainStyle = computed(() => {
-      if (data.msgShow && data.loginShow) {
-        return "margin-top:75px;";
-      } else if (data.msgShow) {
+      const loginStatus = store.state.loginShow;
+      const msgShow = store.state.msgShow;
+      if (loginStatus && msgShow) {
+        return "margin-top:85px;";
+      } else if (msgShow && !loginStatus) {
         return "margin-top: 50px";
-      } else if (data.loginShow) {
-        return "margin-top:55px";
+      } else if (loginStatus && !msgShow) {
+        return "margin-top:65px";
       } else {
         return "margin-top:30px";
       }
@@ -48,17 +53,19 @@ export default {
       const loginStatus = store.state.loginShow;
       const msgShow = store.state.msgShow;
       if (logStatus && loginStatus && msgShow) {
-        return "height:calc(100vh - 306px)";
+        return "height:calc(100vh - 316px)";
       } else if (logStatus && msgShow && !loginStatus) {
         return "height:calc(100vh - 281px)";
       } else if (loginStatus && msgShow && !logStatus) {
-        return "height:calc(100vh - 181px)";
+        return "height:calc(100vh - 191px)";
       } else if (msgShow && !logStatus && !loginStatus) {
         return "height:calc(100vh - 156px)";
       } else if (!msgShow && logStatus && !loginStatus) {
         return "height:calc(100vh - 261px)";
       } else if (!msgShow && !logStatus && loginStatus) {
-        return "height:calc(100vh - 161px)";
+        return "height:calc(100vh - 171px)";
+      } else if (logStatus && !msgShow && loginStatus) {
+        return "height:calc(100vh - 296px)";
       } else {
         return "height:calc(100vh - 136px)";
       }
@@ -102,7 +109,7 @@ export default {
 }
 /*滚动条的设置*/
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(0, 0, 0, 0.3);
   background-clip: padding-box;
   min-height: 28px;
   -webkit-border-radius: 2em;
@@ -111,6 +118,6 @@ export default {
 }
 /*滚动条移上去的背景*/
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(0, 0, 0, 0.4);
 }
 </style>

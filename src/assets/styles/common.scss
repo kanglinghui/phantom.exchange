@@ -16,3 +16,76 @@
 .el-input__inner {
     text-align: left !important;
 }
+.success__info {
+    background-color: #67C23A;
+    color: #fff;
+    .el-icon-success {
+        color: #fff;
+    }
+    .el-notification__title {
+        color: #fff;
+    }
+    .el-notification__closeBtn {
+        color: #fff;
+        transition: 0.5s;
+        &:hover {
+            color:#dc2828; 
+        }
+    }
+}
+.warning__info {
+    background-color: #E6A23C;
+    color: #fff;
+    .el-icon-warning {
+        color: #fff;
+    }
+    .el-notification__title {
+        color: #fff;
+    }
+    .el-notification__closeBtn {
+        color: #fff;
+        transition: 0.5s;
+        &:hover {
+            color:#dc2828; 
+        }
+    }
+}
+.err__info {
+    background-color: #F56C6C;
+    color: #fff;
+    .el-icon-error {
+        color: #fff;
+    }
+    .el-notification__title {
+        color: #fff;
+    }
+    .el-notification__closeBtn {
+        color: #fff;
+        transition: 0.5s;
+        &:hover {
+            color:#dc2828; 
+        }
+    }
+}
+.el-notification__content {
+    p {
+        color: #fff;
+    }
+}
+.el-notification {
+    border:0;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+.el-dialog__header {
+    padding: 10px 15px;
+    background-color: #f7f7f7;
+    line-height: 24px;
+    .el-dialog__headerbtn {
+        top: 14px;
+        .el-dialog__close{
+            &:hover {
+                color: #dc2828 !important;
+            }
+        }
+    }
+}

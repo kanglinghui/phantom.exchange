@@ -1,8 +1,22 @@
 <template>
-  <div class="header">
+  <div class="header" :style="loginShow ? 'top:35px' : 'top:0px'">
     <div class="head-l">
       <div class="head-img">
-        <img src="@/assets/images/head.png" alt="" />
+        <el-dropdown v-if="!loginShow">
+          <img src="@/assets/images/head.png" alt="" />
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item @click="change_pass"
+                ><i class="el-icon-lock"></i>修改密码</el-dropdown-item
+              >
+              <!-- <el-dropdown-item>狮子头</el-dropdown-item>
+              <el-dropdown-item>螺蛳粉</el-dropdown-item>
+              <el-dropdown-item disabled>双皮奶</el-dropdown-item>
+              <el-dropdown-item divided>蚵仔煎</el-dropdown-item> -->
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+        <img v-else src="@/assets/images/head.png" alt="" />
       </div>
       <ul class="list">
         <li
@@ -22,18 +36,40 @@
     </div>
     <div class="title">Phantom Exchange</div>
   </div>
+  <div>
+    <el-dialog
+      :title="dialogTitle"
+      v-model="dialogVisible"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      width="550px"
+    >
+      <ChangePassUI v-model:pass="dialogVisible" v-if="dialogVisible" />
+    </el-dialog>
+  </div>
 </template>
 <script>
-import { watch, reactive, toRefs } from "vue";
+import { watch, reactive, toRefs, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import routes from "@/router/routes.js";
+import { useStore } from "vuex";
+import ChangePassUI from "./components/ChangePass.vue";
 export default {
+  components: {
+    ChangePassUI,
+  },
   setup() {
     const router = useRouter();
     const route = useRoute();
     const data = reactive({
       routeList: routes.filter((item) => item.meta.head),
       activeIndex: route.path,
+      dialogTitle: "",
+      dialogVisible: false,
+    });
+    const store = useStore();
+    const loginShow = computed(() => {
+      return store.state.loginShow;
     });
     watch(
       () => route.path,
@@ -50,10 +86,17 @@ export default {
       data.routeList.splice(idx, 1);
       router.push("/");
     };
+    const change_pass = () => {
+      // 修改密码
+      data.dialogVisible = true;
+      data.dialogTitle = "修改密码";
+    };
     return {
       ...toRefs(data),
       headClick,
       exit,
+      loginShow,
+      change_pass,
     };
   },
 };

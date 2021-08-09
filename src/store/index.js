@@ -1,9 +1,8 @@
 import { createStore } from "vuex";
-
 export default createStore({
   state: {
-    logShowStatus: false,
-    loginShow: false,
+    logShowStatus: true,
+    loginShow: true,
     msgShow: true,
   },
   mutations: {
