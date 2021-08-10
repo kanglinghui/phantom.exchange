@@ -206,7 +206,7 @@ export default {
 }
 :deep(th) {
   color: #303133;
-  background-color: #e2e2e3;
+  background-color: rgb(226, 226, 227);
 }
 :deep(.is-center) {
   line-height: 22px !important;

@@ -6,10 +6,14 @@
           <span @click="matching"><i class="el-icon-setting"></i>撮合配置</span>
         </div>
         <div class="config-btn">
-          <span><i class="el-icon-setting"></i>投资组合配置</span>
+          <span @click="portfolio"
+            ><i class="el-icon-setting"></i>投资组合配置</span
+          >
         </div>
         <div class="config-btn">
-          <span><i class="el-icon-setting"></i>API接入信息</span>
+          <span @click="api_show"
+            ><i class="el-icon-setting"></i>API接入信息</span
+          >
         </div>
         <div class="des">
           <span>参数配置 & API接入信息</span>
@@ -331,7 +335,9 @@
         </el-tabs>
       </div>
     </div>
-    <DialogMatching v-if="matchingShow" v-model:dialog="matchingShow" />
+    <DialogMatching v-model:dialog="matchingShow" />
+    <DialogApi v-model:dialog="apiShow" />
+    <DialogPortfolio v-model:dialog="portfolioShow" />
   </div>
 </template>
 <script>
@@ -349,6 +355,8 @@ import PortfolioUI from "./components/Portfolio.vue";
 import SimulationUI from "./components/Simulation.vue";
 
 import DialogMatching from "@/components/dialog/Matching.vue";
+import DialogApi from "@/components/dialog/Api.vue";
+import DialogPortfolio from "@/components/dialog/Portfolio.vue";
 
 import { ElNotification } from "element-plus";
 
@@ -358,6 +366,8 @@ export default {
     PortfolioUI,
     SimulationUI,
     DialogMatching,
+    DialogApi,
+    DialogPortfolio,
   },
   setup() {
     const store = useStore();
@@ -369,6 +379,8 @@ export default {
       tableData: [],
       tableLoading: false,
       matchingShow: false,
+      apiShow: false,
+      portfolioShow: false,
     });
     onMounted(() => {
       timer = setTimeout(() => {
@@ -701,9 +713,14 @@ export default {
     };
     const matching = () => {
       // 撮合配置
-      console.log(data.matchingShow, 1111);
       data.matchingShow = true;
-      console.log(data.matchingShow, 2);
+    };
+    const api_show = () => {
+      // api配置
+      data.apiShow = true;
+    };
+    const portfolio = () => {
+      data.portfolioShow = true;
     };
     return {
       ...toRefs(data),
@@ -712,6 +729,8 @@ export default {
       declaration,
       height,
       matching,
+      api_show,
+      portfolio,
     };
   },
 };
@@ -954,5 +973,8 @@ export default {
     color: #fff;
     background-color: rgba(218, 43, 48, 0.9);
   }
+}
+:deep(.el-input.is-focus .el-input__inner) {
+  border-color: rgba(0, 0, 0, 0.1) !important;
 }
 </style>
