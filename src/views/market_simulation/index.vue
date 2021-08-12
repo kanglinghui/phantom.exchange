@@ -311,8 +311,10 @@
           >
             <template v-slot:default="scope">
               <span class="table_btn cj" @click="clinch(scope.row)">成交</span>
-              <span class="table_btn cd">撤单</span>
-              <span class="table_btn detail">详情</span>
+              <span class="table_btn cd" @click="cancel(scope.row)">撤单</span>
+              <span class="table_btn detail" @click="detail(scope.row)"
+                >详情</span
+              >
             </template>
           </el-table-column>
         </el-table>
@@ -338,6 +340,29 @@
     <DialogMatching v-model:dialog="matchingShow" />
     <DialogApi v-model:dialog="apiShow" />
     <DialogPortfolio v-model:dialog="portfolioShow" />
+    <el-dialog
+      :title="orderTitle"
+      v-model="orderShow"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      :width="orderTitle === '订单详情' ? '900px' : '500px'"
+      custom-class="orderDialog"
+      top="8vh"
+    >
+      <OrderDia
+        :info="orderParams"
+        :title="orderTitle"
+        v-model:dialog="orderShow"
+        v-if="
+          (orderShow && orderTitle === '成交订单') ||
+          (orderShow && orderTitle === '确认撤单？')
+        "
+      />
+      <OrderDetail
+        :info="orderParams"
+        v-if="orderShow && orderTitle === '订单详情'"
+      />
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -350,6 +375,7 @@ import {
   nextTick,
 } from "vue";
 import { useStore } from "vuex";
+
 import FreeTradeUI from "./components/FreeTrade.vue";
 import PortfolioUI from "./components/Portfolio.vue";
 import SimulationUI from "./components/Simulation.vue";
@@ -358,7 +384,9 @@ import DialogMatching from "@/components/dialog/Matching.vue";
 import DialogApi from "@/components/dialog/Api.vue";
 import DialogPortfolio from "@/components/dialog/Portfolio.vue";
 
-import { ElNotification } from "element-plus";
+import OrderDia from "./components/OrderDia.vue";
+import OrderDetail from "./components/OrderDetail.vue";
+// import { ElNotification } from "element-plus";
 
 export default {
   components: {
@@ -368,6 +396,8 @@ export default {
     DialogMatching,
     DialogApi,
     DialogPortfolio,
+    OrderDia,
+    OrderDetail,
   },
   setup() {
     const store = useStore();
@@ -381,23 +411,42 @@ export default {
       matchingShow: false,
       apiShow: false,
       portfolioShow: false,
+      orderTitle: "",
+      orderShow: false,
+      orderParams: null,
     });
     onMounted(() => {
       timer = setTimeout(() => {
         data.tableData = [
           {
+            trade: "SH",
+            contract: "000509",
             date: "0801",
             order_status: "部分成交部分撤单",
             direction: "买",
             sumProgress: "100",
             progress: 80,
+            price: "99.99",
+            num: "999",
+            fx: "多",
+            status: "部分成交",
+            sy: "99",
+            cjnum: "88",
           },
           {
-            date: "0802",
+            trade: "SH",
+            contract: "000509",
+            date: "0801",
             order_status: "部分成交部分撤单",
             direction: "卖",
-            sumProgress: "120",
-            progress: 99,
+            sumProgress: "100",
+            progress: 80,
+            price: "99.99",
+            fx: "空",
+            num: "999",
+            status: "部分成交",
+            sy: "99",
+            cjnum: "88",
           },
           {
             date: "0803",
@@ -600,12 +649,10 @@ export default {
           let dom = document.querySelector(
             ".table-box .el-table .el-table__body-wrapper"
           );
-          console.log(dom, 1);
           const offsetHeight = dom.offsetHeight;
           dom.onscroll = () => {
             const scrollTop = dom.scrollTop;
             const scrollHeight = dom.scrollHeight;
-            console.log(scrollTop, scrollHeight, offsetHeight);
             if (offsetHeight + scrollTop - scrollHeight >= 4) {
               data.tableLoading = true;
               setTimeout(() => {
@@ -690,11 +737,24 @@ export default {
     });
     const clinch = (row) => {
       console.log(row);
-      ElNotification.error({
-        title: "错误",
-        customClass: "err__info",
-        message: "我是消息通知",
-      });
+      data.orderTitle = "成交订单";
+      data.orderParams = row;
+      data.orderShow = true;
+      //   ElNotification.error({
+      //     title: "错误",
+      //     customClass: "err__info",
+      //     message: "我是消息通知",
+      //   });
+    };
+    const cancel = (row) => {
+      data.orderTitle = "确认撤单？";
+      data.orderParams = row;
+      data.orderShow = true;
+    };
+    const detail = (row) => {
+      data.orderTitle = "订单详情";
+      data.orderParams = row;
+      data.orderShow = true;
     };
     const cellName = (row) => {
       if (row.column.label === "买卖方向" && row.row.direction === "买") {
@@ -725,6 +785,8 @@ export default {
     return {
       ...toRefs(data),
       clinch,
+      cancel,
+      detail,
       cellName,
       declaration,
       height,
@@ -976,5 +1038,8 @@ export default {
 }
 :deep(.el-input.is-focus .el-input__inner) {
   border-color: rgba(0, 0, 0, 0.1) !important;
+}
+:deep(.orderDialog .el-dialog__body) {
+  padding: 0 !important;
 }
 </style>

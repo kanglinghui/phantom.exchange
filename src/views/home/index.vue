@@ -102,6 +102,11 @@ export default {
           display: flex;
           align-items: center;
           transition: 0.5s;
+          img {
+            width: 60px;
+            height: 60px;
+            border-radius: 4px;
+          }
           &:hover {
             border-radius: 4px;
             box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);

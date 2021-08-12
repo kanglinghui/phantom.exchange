@@ -123,17 +123,17 @@ export default {
     margin-right: 5px;
   }
   .head-img {
-    padding: 2px 4px;
+    padding: 2px;
     border-right: 1px solid rgba(0, 0, 0, 0.1);
     img {
-      width: 26px;
-      height: 26px;
+      width: 24px;
+      height: 24px;
       border-radius: 2px;
     }
   }
   ul {
     display: flex;
-    width: calc(100vw - 182px);
+    width: calc(100vw - 170px);
     overflow-x: auto;
     li {
       line-height: 30px;
