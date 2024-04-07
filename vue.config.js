@@ -1,4 +1,6 @@
 const path = require("path");
+const { defineConfig } = require("@vue/cli-service");
+
 const CompressionPlugin = require("compression-webpack-plugin");
 const productionGzipExtensions = /\.(js|css|json|txt|html|ico|svg)(\?.*)?$/i;
 
@@ -31,7 +33,8 @@ function resolve(dir) {
 }
 const devServer = {
   port: "8081",
-  disableHostCheck: true,
+  historyApiFallback: true,
+  allowedHosts: "all",
   open: true,
   //   proxy: {
   //     // detail: https://cli.vuejs.org/config/#devserver-proxy
@@ -47,9 +50,9 @@ const devServer = {
   //   },
 };
 
-module.exports = {
+module.exports = defineConfig({
   publicPath: "./",
-  lintOnSave: true,
+  lintOnSave: false,
   devServer,
   outputDir: "./dist", // 运行时生成的生产环境构建文件的目录(默认''dist''，构建之前会被清除)
   productionSourceMap: false, // 生产打包时不输出map文件，增加打包速度
@@ -81,9 +84,17 @@ module.exports = {
       .set("views", resolve("./src/views"))
       .set("store", resolve("./src/store"))
       .set("utils", resolve("./src/utils"));
+      config.plugin("define").tap((args) => {
+        Object.assign(args[0], {
+          __VUE_OPTIONS_API__: 'true',
+          __VUE_PROD_DEVTOOLS__: 'false',
+          __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: 'false'
+        })
+        return args;
+      });
     // 移除 prefetch 插件
     // config.plugins.delete('prefetch')
     // 移除 preload 插件
     // config.plugins.delete('preload');
   },
-};
+});
